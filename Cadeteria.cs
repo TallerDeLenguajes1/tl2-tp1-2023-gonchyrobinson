@@ -12,6 +12,8 @@ namespace EspacioCadeteria
 
         public string Nombre { get => nombre; set => nombre = value; }
         public string Direccion { get => direccion; set => direccion = value; }
+        public List<Cadete> Cadetes { get => cadetes; set => cadetes = value; }
+        public List<Pedido> Pedidos { get => pedidos; set => pedidos = value; }
 
         public Cadeteria(string nombre, string direccion, List<Cadete> cadetes)
         {
@@ -19,6 +21,9 @@ namespace EspacioCadeteria
             this.direccion = direccion;
             this.cadetes = cadetes;
             this.pedidos = new List<Pedido>();
+        }
+        public Cadeteria(){
+            
         }
         public Cadeteria(string nombre, string direccion)
         {
@@ -34,12 +39,18 @@ namespace EspacioCadeteria
             Pedido pedido = new Pedido(idPedido, obsPedido, cliente, asignado);
             this.pedidos.Add(pedido);
         }
+        public void CrearPedido(string? nombreCliente, string? direccionCliente, string? telefonoCliente, string? datosReferenciaDireccionCliente, int idPedido, string? obsPedido)
+        {
+            Cliente cliente = new Cliente(nombreCliente, direccionCliente, telefonoCliente, datosReferenciaDireccionCliente);
+            Pedido pedido = new Pedido(idPedido, obsPedido, cliente);
+            this.pedidos.Add(pedido);
+        }
 
         public void ReasignarPedido(int pedidoId, int cadeteNuevoId)
         {
-            Pedido pedidoEncontrado = this.pedidos.FirstOrDefault(ped => ped.Numero==pedidoId);
-            Cadete cadeteNuevo = this.cadetes.FirstOrDefault(cad => cad.Id==cadeteNuevoId);
-            if (cadeteNuevo != null && pedidoEncontrado!=null)
+            Pedido pedidoEncontrado = this.pedidos.FirstOrDefault(ped => ped.Numero == pedidoId);
+            Cadete cadeteNuevo = this.cadetes.FirstOrDefault(cad => cad.Id == cadeteNuevoId);
+            if (cadeteNuevo != null && pedidoEncontrado != null)
             {
                 pedidoEncontrado.AsignarCadeteAPedido(cadeteNuevo);
             }
@@ -50,8 +61,8 @@ namespace EspacioCadeteria
         }
         public void EliminarPedido(int pedidoId)
         {
-            Pedido eliminar = this.pedidos.FirstOrDefault(ped => ped.Numero==pedidoId);
-            if (eliminar!=null)
+            Pedido eliminar = this.pedidos.FirstOrDefault(ped => ped.Numero == pedidoId);
+            if (eliminar != null)
             {
                 this.pedidos.Remove(eliminar);
             }
@@ -90,7 +101,7 @@ namespace EspacioCadeteria
             List<DatosCadete> datosCadetes = new List<DatosCadete>();
             foreach (var item in this.cadetes)
             {
-                DatosCadete datosCad = new DatosCadete(cantPedidosCadeteEntregados(item.Id),JornalACobrar(item.Id),item.Nombre);
+                DatosCadete datosCad = new DatosCadete(cantPedidosCadeteEntregados(item.Id), JornalACobrar(item.Id), item.Nombre);
                 datosCadetes.Add(datosCad);
             }
             var informe = new Informe(datosCadetes);
@@ -102,12 +113,13 @@ namespace EspacioCadeteria
         }
         public float JornalACobrar(int id)
         {
-            float monto =  500*cantPedidosCadeteEntregados(id);
+            float monto = 500 * cantPedidosCadeteEntregados(id);
             return monto;
         }
-        public int cantPedidosCadeteEntregados(int id){
+        public int cantPedidosCadeteEntregados(int id)
+        {
             List<Pedido> pedidosCad = this.pedidos.Where(ped => ped.CoincideCadete(id)).ToList();
-            return pedidosCad.Count(ped => ped.Estado==EstadoPedido.Entregado);
+            return pedidosCad.Count(ped => ped.Estado == EstadoPedido.Entregado);
         }
 
         public string MostrarPedidos()
@@ -124,7 +136,15 @@ namespace EspacioCadeteria
             Cadete cadete = this.cadetes.FirstOrDefault(cad => cad.Id == idCadete);
             if (cadete != null)
             {
-                this.pedidos.FirstOrDefault(ped => ped.Numero == idPedido).AsignarCadeteAPedido(cadete);
+                Pedido pedido = this.pedidos.FirstOrDefault(ped => ped.Numero == idPedido);
+                if (pedido != null)
+                {
+                    pedido.AsignarCadeteAPedido(cadete);
+                }
+                else
+                {
+                    Console.WriteLine("Pedido inexistente");
+                }
             }
             else
             {
@@ -134,16 +154,23 @@ namespace EspacioCadeteria
 
         public bool EncuentraCadete(Cadete cad)
         {
-            return this.cadetes.FirstOrDefault(cadet => cadet.Id==cad.Id)!=null;
+            return this.cadetes.FirstOrDefault(cadet => cadet.Id == cad.Id) != null;
         }
-        public List<Pedido> PedidosPendientes(){
-            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Pendiente).ToList();
+        public List<Pedido> PedidosPendientes()
+        {
+            return this.pedidos.Where(ped => ped.Estado == EstadoPedido.Pendiente).ToList();
         }
-        public List<Pedido> PedidosEntregados(){
-            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Entregado).ToList();
+        public List<Pedido> PedidosEntregados()
+        {
+            return this.pedidos.Where(ped => ped.Estado == EstadoPedido.Entregado).ToList();
         }
-        public List<Pedido> PedidosRechazados(){
-            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Rechazado).ToList();
+        public List<Pedido> PedidosRechazados()
+        {
+            return this.pedidos.Where(ped => ped.Estado == EstadoPedido.Rechazado).ToList();
+        }
+        public List<Pedido> PedidosSinCadete()
+        {
+            return this.pedidos.Where(ped => ped.NoTieneCadeteAsignado()).ToList();
         }
     }
 }

@@ -14,6 +14,9 @@ namespace EspacioCadeteria
             this.direccion = direccion;
             this.telefono = telefono;
         }
+        public Cadete(){
+            
+        }
         public Cadete(int id, string nombre, string direccion, string telefono)
         {
             this.id = id;

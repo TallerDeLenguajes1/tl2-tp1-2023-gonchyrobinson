@@ -1,26 +1,44 @@
 ﻿using System;
 using System.Security.AccessControl;
+using System.Security.Cryptography;
 using EspacioArchivos;
 using EspacioCadeteria;
 internal partial class Program
 {
     private static void Main(string[] args)
     {
-        string archivoCadeteria = "Cadeterias.csv";
-        string archivoCadete = "Nombres.csv";
-        Archivo helper = new Archivo();
-        List<Cadeteria> cadeterias = helper.LeerCsvCadeteria(archivoCadeteria, ',');
-        List<Cadete> cadetes = helper.LeerCsvCadete(archivoCadete, ',');
-        AgregaCadetesLista(cadeterias, cadetes);
+        AccesoADatos helper;
+        Console.WriteLine("Ingrese desde que tipo de archivo desea leer los datos: (1) CSV  -   2) JSON)");
+        int tipoArchivo = Convert.ToInt32(Console.ReadLine());
+        List<Cadeteria> cadeterias;
+        List<Cadete> cadetes;
+        if (tipoArchivo == 1)
+        {
+            string archivoCadeteria = "Cadeterias.csv";
+            string archivoCadete = "Nombres.csv";
+            helper = new AccesoCSV();
+            cadeterias = helper.AccesoCSVCadeterias(archivoCadeteria);
+            cadetes = helper.AccesoCSVCadetes(archivoCadete);
+            AgregaCadetesLista(cadeterias, cadetes);
+
+        }
+        else
+        {
+            string rutaJsonCadeterias = "Cadeterias.json";
+            string rutaJsonCadetes = "Cadetes.json";
+            helper = new AccesoJson();
+            cadeterias = helper.AccesoJSONCadeterias(rutaJsonCadeterias);
+            cadetes = helper.AccesoJSONCadetes(rutaJsonCadetes);
+        }
         Console.WriteLine("Seleccione en que cadeteria desea manejar: ");
         MostrarCadeteriasDisponilbes(cadeterias);
         Console.WriteLine("Cadeteria elegida: ");
         Cadeteria elegida = cadeterias[Convert.ToInt32(Console.ReadLine()) - 1];
         Console.WriteLine("\n===============================MENU=========================\n");
-        Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td) Ver informe provisiorio");
+        Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td)Asignar pedido (sin cadete) a cadete\n\te)Ver Informe provisorio\n\tOtra letra: salir");
         string? opcion = Console.ReadLine();
         int contador = 1;
-        while (opcion == "a" || opcion == "b" || opcion == "c" || opcion == "d")
+        while (opcion == "a" || opcion == "b" || opcion == "c" || opcion == "d" || opcion == "e")
         {
             char opcionChar = opcion[0];
             switch (opcionChar)
@@ -36,15 +54,32 @@ internal partial class Program
                     ReasignarPedidoAOtroCadete(elegida);
                     break;
                 case 'd':
+                    AsignarCadeteAPedido(elegida);
+                    break;
+                case 'e':
                     VerInforme(elegida);
                     break;
             }
-            Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td) Ver informe provisiorio");
+            Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td)Asignar pedido (sin cadete) a cadete\n\te)Ver Informe provisorio\n\tOtra letra: salir");
             opcion = Console.ReadLine();
         }
         VerInforme(elegida);
 
     }
+
+    public static void AsignarCadeteAPedido(Cadeteria elegida)
+    {
+        Console.WriteLine("Seleccione a que pedido desea asignarle un cadete: ");
+        MostrarLista(elegida.PedidosSinCadete());
+        Console.WriteLine("Elegido:  ");
+        int pedidoEl = Convert.ToInt32(Console.ReadLine());
+        Console.WriteLine("Seleccione el cadete al que le asignara el pedido: ");
+        Console.WriteLine(elegida.MuestraCadetes());
+        Console.WriteLine("Elegido:  ");
+        int numCadeteElegido = Convert.ToInt32(Console.ReadLine());
+        elegida.AsignarCadeteAPedido(numCadeteElegido, pedidoEl);
+    }
+
     public static void VerInforme(Cadeteria elegida)
     {
         Console.WriteLine("\n\n===================================INFORME " + elegida.Nombre + "=====================================");
@@ -81,11 +116,7 @@ internal partial class Program
         string? datosRefCliente = Console.ReadLine();
         Console.WriteLine("Agregue las observaciones para su pedido: ");
         string? observacionesPedido = Console.ReadLine();
-        Console.WriteLine("Seleccione el cadete al que le asignara el pedido: ");
-        Console.WriteLine(cadeteria.MuestraCadetes());
-        Console.WriteLine("Elegido:  ");
-        int numCadeteElegido = Convert.ToInt32(Console.ReadLine());
-        cadeteria.CrearPedido(nombreCliente, direccionCliente, telefonoCliente, datosRefCliente, contador, observacionesPedido, numCadeteElegido);
+        cadeteria.CrearPedido(nombreCliente, direccionCliente, telefonoCliente, datosRefCliente, contador, observacionesPedido);
     }
     public static void MostrarCadeteriasDisponilbes(List<Cadeteria> cadeterias)
     {
@@ -101,7 +132,7 @@ internal partial class Program
     {
         foreach (var item in pedidos)
         {
-                Console.WriteLine("\t" + item.MostrarPedido());
+            Console.WriteLine("\t" + item.MostrarPedido());
         }
     }
 

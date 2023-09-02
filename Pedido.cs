@@ -61,6 +61,15 @@ namespace EspacioCadeteria
             this.cadete = cadete;
 
         }
+        public Pedido(int numero, string obs, Cliente cliente)
+        {
+            this.numero = numero;
+            this.obs = obs;
+            this.cliente = cliente;
+            this.estado = EstadoPedido.Pendiente;
+            this.cadete = null;
+
+        }
         public void ActualizarPedido(EstadoPedido estado)
         {
             this.estado = estado;
@@ -82,7 +91,8 @@ namespace EspacioCadeteria
                         break;
                 }
                 this.estado = estado;
-            }else
+            }
+            else
             {
                 Console.WriteLine("Error: Estado invalido");
             }
@@ -97,16 +107,37 @@ namespace EspacioCadeteria
         }
         public string MostrarPedido()
         {
-            return "Numero: " + this.numero + " - Estado: " + this.estado + " - Observaciones: " + this.obs;
+            string devuelve = "Numero: " + this.numero + " - Estado: " + this.estado + " - Observaciones: " + this.obs + " - // Cadete: ";
+            if (this.cadete != null)
+            {
+                devuelve += this.cadete.Mostrar();
+            }
+            else
+            {
+                devuelve += "No asignado";
+            }
+            return devuelve;
         }
-        public bool CoincideCadete(int idCadete){
-            return this.cadete.Id==idCadete;
+        public bool CoincideCadete(int idCadete)
+        {
+            if (this.cadete != null)
+            {
+                return this.cadete.Id == idCadete;
+            }else
+            {
+                return false;
+            }
         }
         public int Numero { get => numero; set => numero = value; }
         public string Obs { get => obs; set => obs = value; }
         public EstadoPedido Estado { get => estado; set => estado = value; }
-        public void AsignarCadeteAPedido(Cadete cadete){
-            this.cadete=cadete;
+        public void AsignarCadeteAPedido(Cadete cadete)
+        {
+            this.cadete = cadete;
+        }
+        public bool NoTieneCadeteAsignado()
+        {
+            return this.cadete == null;
         }
     }
 }
