@@ -23,7 +23,7 @@ namespace EspacioCadeteria
             this.pedidos = new List<Pedido>();
         }
         public Cadeteria(){
-            
+
         }
         public Cadeteria(string nombre, string direccion)
         {
@@ -127,7 +127,7 @@ namespace EspacioCadeteria
             string pedidosMostrar = "";
             foreach (var ped in this.pedidos)
             {
-                pedidosMostrar = ped.MostrarPedido();
+                pedidosMostrar += "\n - "+ped.MostrarPedido();
             }
             return pedidosMostrar;
         }

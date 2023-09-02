@@ -149,7 +149,7 @@ internal partial class Program
     public static void ReasignarPedidoAOtroCadete(Cadeteria cadeteria)
     {
         Console.WriteLine("Seleccione el pedido que desea reasignar: ");
-        cadeteria.MostrarPedidos();
+        Console.WriteLine(cadeteria.MostrarPedidos());
         Console.WriteLine("Elegido: ");
         int elegido = Convert.ToInt32(Console.ReadLine());
         Console.WriteLine("Ingrese a que cadete desea reasignar el pedido: ");
