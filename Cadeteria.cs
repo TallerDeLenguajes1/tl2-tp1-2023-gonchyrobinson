@@ -8,6 +8,7 @@ namespace EspacioCadeteria
         private string direccion;
         private List<Cadete> cadetes;
 
+        private List<Pedido> pedidos;
 
         public string Nombre { get => nombre; set => nombre = value; }
         public string Direccion { get => direccion; set => direccion = value; }
@@ -17,34 +18,43 @@ namespace EspacioCadeteria
             this.nombre = nombre;
             this.direccion = direccion;
             this.cadetes = cadetes;
+            this.pedidos = new List<Pedido>();
         }
         public Cadeteria(string nombre, string direccion)
         {
             this.nombre = nombre;
             this.direccion = direccion;
             this.cadetes = new List<Cadete>();
+            this.pedidos = new List<Pedido>();
         }
-        public void CrearPedido(Pedido pedido, Cadete cadete)
+        public void CrearPedido(string? nombreCliente, string? direccionCliente, string? telefonoCliente, string? datosReferenciaDireccionCliente, int idPedido, string? obsPedido, int idCadeteElegido)
         {
-            pedido.ActualizarPedido(EstadoPedido.Aceptado);
-            cadete.AsignarPedido(pedido);
+            Cliente cliente = new Cliente(nombreCliente, direccionCliente, telefonoCliente, datosReferenciaDireccionCliente);
+            Cadete asignado = this.cadetes.FirstOrDefault(cad => cad.Id == idCadeteElegido);
+            Pedido pedido = new Pedido(idPedido, obsPedido, cliente, asignado);
+            this.pedidos.Add(pedido);
         }
 
-        public void ReasignarPedido(Pedido pedido, Cadete cadeteNuevo)
+        public void ReasignarPedido(int pedidoId, int cadeteNuevoId)
         {
-            Cadete cadeteAnt = this.cadetes.FirstOrDefault(cad => cad.TienePedido(pedido), null);
-            if (cadeteAnt != null)
+            Pedido pedidoEncontrado = this.pedidos.FirstOrDefault(ped => ped.Numero==pedidoId);
+            Cadete cadeteNuevo = this.cadetes.FirstOrDefault(cad => cad.Id==cadeteNuevoId);
+            if (cadeteNuevo != null && pedidoEncontrado!=null)
             {
-                cadeteAnt.EliminarPedido(pedido);
-                cadeteNuevo.AsignarPedido(pedido);
-            }else
+                pedidoEncontrado.AsignarCadeteAPedido(cadeteNuevo);
+            }
+            else
             {
-                Console.WriteLine("Error: pedido no asignado a ningun cliente");
+                Console.WriteLine("Numero de pedido invalido o id de cadete no encontrado");
             }
         }
-        public void EliminarPedido(Pedido pedido, Cadete cadete)
+        public void EliminarPedido(int pedidoId)
         {
-            cadete.EliminarPedido(pedido);
+            Pedido eliminar = this.pedidos.FirstOrDefault(ped => ped.Numero==pedidoId);
+            if (eliminar!=null)
+            {
+                this.pedidos.Remove(eliminar);
+            }
         }
         public void AgregarCadete(Cadete cadete)
         {
@@ -57,17 +67,6 @@ namespace EspacioCadeteria
         public void CargarCadetes(List<Cadete> cadetes)
         {
             this.cadetes = cadetes;
-        }
-        public bool EncuentraCadete(Cadete cadete)
-        {
-            if (this.cadetes.Find(el => el.CoincideId(cadete)) != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
         public Cadete? DevuelveCadete(Cadete cadete)
         {
@@ -86,65 +85,65 @@ namespace EspacioCadeteria
             }
             return lista;
         }
-        public string Informe(){
-            var informe = new Informe();
-            foreach (var item in cadetes)
+        public string Informe()
+        {
+            List<DatosCadete> datosCadetes = new List<DatosCadete>();
+            foreach (var item in this.cadetes)
             {
-                DatosCadete datosCadete=new DatosCadete(item);
-                informe.AgregarCadete(datosCadete);
+                DatosCadete datosCad = new DatosCadete(cantPedidosCadeteEntregados(item.Id),JornalACobrar(item.Id),item.Nombre);
+                datosCadetes.Add(datosCad);
             }
+            var informe = new Informe(datosCadetes);
             return informe.Mostrar();
         }
-        public void ActualizarPedido(Pedido elegido, List<Pedido> listaPedidos, EstadoPedido nuevoEstado){
-            if(nuevoEstado!=EstadoPedido.Aceptado){
-                Cadete cadetePedido = this.cadetes.FirstOrDefault(cad => cad.TienePedido(elegido),null);
-                if (cadetePedido!=null)
-                {
-                    if (nuevoEstado==EstadoPedido.Pendiente)
-                    {
-                        elegido.ActualizarPedido(EstadoPedido.Pendiente);
-                        cadetePedido.EliminarPedido(elegido);
-                    }else{
-                        cadetePedido.EliminarPedido(elegido);
-                        listaPedidos.Remove(elegido);
-                    }
-                }
-            }else
+        public void ActualizarPedido(int idElegido, int nuevoEstadoInt)
+        {
+            this.pedidos.FirstOrDefault(ped => ped.Numero == idElegido).ActualizarPedido(nuevoEstadoInt);
+        }
+        public float JornalACobrar(int id)
+        {
+            float monto =  500*cantPedidosCadeteEntregados(id);
+            return monto;
+        }
+        public int cantPedidosCadeteEntregados(int id){
+            List<Pedido> pedidosCad = this.pedidos.Where(ped => ped.CoincideCadete(id)).ToList();
+            return pedidosCad.Count(ped => ped.Estado==EstadoPedido.Entregado);
+        }
+
+        public string MostrarPedidos()
+        {
+            string pedidosMostrar = "";
+            foreach (var ped in this.pedidos)
             {
-                elegido.ActualizarPedido(EstadoPedido.Aceptado);
+                pedidosMostrar = ped.MostrarPedido();
+            }
+            return pedidosMostrar;
+        }
+        public void AsignarCadeteAPedido(int idCadete, int idPedido)
+        {
+            Cadete cadete = this.cadetes.FirstOrDefault(cad => cad.Id == idCadete);
+            if (cadete != null)
+            {
+                this.pedidos.FirstOrDefault(ped => ped.Numero == idPedido).AsignarCadeteAPedido(cadete);
+            }
+            else
+            {
+                Console.WriteLine("Id de cadete inexistente");
             }
         }
-        public void ActualizarPedido(Pedido elegido, List<Pedido> listaPedidos, int nuevoEstadoInt){
-            EstadoPedido nuevoEstado = 0;
-            switch (nuevoEstadoInt)
-            {
-                case 1:
-                    nuevoEstado = EstadoPedido.Aceptado;
-                    break;
-                case 2:
-                    nuevoEstado = EstadoPedido.Pendiente;
-                    break;
-                case 3:
-                    nuevoEstado = EstadoPedido.Rechazado;
-                    break;
-            }
-            if(nuevoEstado!=EstadoPedido.Aceptado){
-                Cadete cadetePedido = this.cadetes.FirstOrDefault(cad => cad.TienePedido(elegido),null);
-                if (cadetePedido!=null)
-                {
-                    if (nuevoEstado==EstadoPedido.Pendiente)
-                    {
-                        elegido.ActualizarPedido(EstadoPedido.Pendiente);
-                        cadetePedido.EliminarPedido(elegido);
-                    }else{
-                        cadetePedido.EliminarPedido(elegido);
-                        listaPedidos.Remove(elegido);
-                    }
-                }
-            }else
-            {
-                elegido.ActualizarPedido(EstadoPedido.Aceptado);
-            }
+
+        public bool EncuentraCadete(Cadete cad)
+        {
+            return this.cadetes.FirstOrDefault(cadet => cadet.Id==cad.Id)!=null;
+        }
+        public List<Pedido> PedidosPendientes(){
+            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Pendiente).ToList();
+        }
+        public List<Pedido> PedidosEntregados(){
+            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Entregado).ToList();
+        }
+        public List<Pedido> PedidosRechazados(){
+            return this.pedidos.Where(ped => ped.Estado==EstadoPedido.Rechazado).ToList();
         }
     }
 }

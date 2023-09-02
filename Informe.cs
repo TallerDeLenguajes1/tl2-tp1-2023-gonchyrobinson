@@ -1,5 +1,6 @@
 namespace EspacioCadeteria
 {
+
     public class Informe{
         public List<DatosCadete> datosCadetes;
         public float enviosPromedioPorCadete;

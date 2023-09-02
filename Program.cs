@@ -17,32 +17,29 @@ internal partial class Program
         Console.WriteLine("Cadeteria elegida: ");
         Cadeteria elegida = cadeterias[Convert.ToInt32(Console.ReadLine()) - 1];
         Console.WriteLine("\n===============================MENU=========================\n");
-        Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Asiganrlos a cadetes\n\tc)Cambiarlos de estado\n\td)Reasignar el pedido a otro cadete\n\te) Ver informe provisiorio");
+        Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td) Ver informe provisiorio");
         string? opcion = Console.ReadLine();
-        List<Pedido> pedidos = new List<Pedido>();
-        while (opcion == "a" || opcion == "b" || opcion == "c" || opcion == "d" || opcion == "e")
+        int contador = 1;
+        while (opcion == "a" || opcion == "b" || opcion == "c" || opcion == "d")
         {
             char opcionChar = opcion[0];
             switch (opcionChar)
             {
                 case 'a':
-                    Pedido pedidoCargar = CargarPedido(elegida, pedidos);
-                    pedidos.Add(pedidoCargar);
+                    CargarPedido(elegida, contador);
+                    contador++;
                     break;
                 case 'b':
-                    AsignarPedidoACadete(elegida, pedidos);
+                    CambiarDeEstadoPedido(elegida);
                     break;
                 case 'c':
-                    CambiarDeEstadoPedido(elegida,pedidos);
+                    ReasignarPedidoAOtroCadete(elegida);
                     break;
                 case 'd':
-                    ReasignarPedidoAOtroCadete(elegida, pedidos);
-                    break;
-                case 'e':
                     VerInforme(elegida);
-                break;
+                    break;
             }
-            Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Asiganrlos a cadetes\n\tc)Cambiarlos de estado\n\td)Reasignar el pedido a otro cadete\n\te) Ver informe provisiorio");
+            Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td) Ver informe provisiorio");
             opcion = Console.ReadLine();
         }
         VerInforme(elegida);
@@ -75,13 +72,20 @@ internal partial class Program
             AgregaCadetes(cadeteria[i], cadetes);
         }
     }
-    public static Pedido CargarPedido(Cadeteria cadeteria, List<Pedido> pedidos)
+    public static void CargarPedido(Cadeteria cadeteria, int contador)
     {
-        Console.WriteLine("Primero debe registrarse, para lo cual debe ingresar nombre - dni - telefono - datos de referencia de su direccion: ");
-        Cliente cliente = new Cliente(Console.ReadLine(), Console.ReadLine(), Console.ReadLine(), Console.ReadLine());
+        Console.WriteLine("Primero debe registrarse, para lo cual debe ingresar nombre - direccion - telefono - datos de referencia de su direccion: ");
+        string? nombreCliente = Console.ReadLine();
+        string? direccionCliente = Console.ReadLine();
+        string? telefonoCliente = Console.ReadLine();
+        string? datosRefCliente = Console.ReadLine();
         Console.WriteLine("Agregue las observaciones para su pedido: ");
-        Pedido pedidoCargar = new Pedido(pedidos.Count(), Console.ReadLine(), cliente);
-        return pedidoCargar;
+        string? observacionesPedido = Console.ReadLine();
+        Console.WriteLine("Seleccione el cadete al que le asignara el pedido: ");
+        Console.WriteLine(cadeteria.MuestraCadetes());
+        Console.WriteLine("Elegido:  ");
+        int numCadeteElegido = Convert.ToInt32(Console.ReadLine());
+        cadeteria.CrearPedido(nombreCliente, direccionCliente, telefonoCliente, datosRefCliente, contador, observacionesPedido, numCadeteElegido);
     }
     public static void MostrarCadeteriasDisponilbes(List<Cadeteria> cadeterias)
     {
@@ -92,104 +96,35 @@ internal partial class Program
             i++;
         }
     }
-    public static void AsignarPedidoACadete(Cadeteria cadeteria, List<Pedido> pedidos)
-    {
-        Console.WriteLine("Pedidos pendientes: ");
-        MostrarPedidosPendientes(pedidos);
-        Console.WriteLine("Elegido:  ");
-        int numElegido = Convert.ToInt32(Console.ReadLine());
-        Pedido pedidoElegido = pedidos.FirstOrDefault(ped => ped.Numero == numElegido, null);
-        if (pedidoElegido != null)
-        {
-            Console.WriteLine("Seleccione el cadete al que le asignara el pedido: ");
-            Console.WriteLine(cadeteria.MuestraCadetes());
-            Console.WriteLine("Elegido:  ");
-            int numCadeteElegido = Convert.ToInt32(Console.ReadLine());
-            Cadete cadeteElegido = cadeteria.DevuelveCadete(numCadeteElegido);
-            if (cadeteElegido != null)
-            {
-                cadeteElegido.AsignarPedido(pedidoElegido);
-            }
-            else
-            {
-                Console.WriteLine("Error: Id de cadete inexistente");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Error: Numero de pedido inexistente");
-        }
-    }
-    public static void MostrarPedidosPendientes(List<Pedido> pedidos)
+
+    public static void MostrarLista(List<Pedido> pedidos)
     {
         foreach (var item in pedidos)
         {
-            if (item.Estado == EstadoPedido.Pendiente)
-            {
                 Console.WriteLine("\t" + item.MostrarPedido());
-            }
         }
     }
-    public static void MostrarPedidosAceptados(List<Pedido> pedidos)
-    {
-        foreach (var item in pedidos)
-        {
-            if (item.Estado == EstadoPedido.Aceptado)
-            {
-                Console.WriteLine("\t" + item.MostrarPedido());
-            }
-        }
-    }
-    public static void MostrarPedidos(List<Pedido> pedidos)
-    {
-        foreach (var item in pedidos)
-        {
-            Console.WriteLine(item.MostrarPedido());
-        }
-    }
-    public static void CambiarDeEstadoPedido(Cadeteria elegida, List<Pedido> pedidos)
+
+
+    public static void CambiarDeEstadoPedido(Cadeteria elegida)
     {
         Console.WriteLine("Pedidos Realizados:  ");
-        MostrarPedidos(pedidos);
+        Console.WriteLine(elegida.MostrarPedidos());
         int numElegido = Convert.ToInt32(Console.ReadLine());
-        Pedido pedidoElegido = pedidos.FirstOrDefault(ped => ped.Numero == numElegido, null);
-        if (pedidoElegido != null)
-        {
-            Console.WriteLine("Nuevo estado: 1) Aceptado - 2) Pendiente - 3) Rechazado");
-            int estado = Convert.ToInt32(Console.ReadLine());
-            elegida.ActualizarPedido(pedidoElegido,pedidos,estado);
-        }
-        else
-        {
-            Console.WriteLine("Pedido inexistente");
-        }
+        Console.WriteLine("Nuevo estado: 1) Entregado - 2) Pendiente - 3) Rechazado");
+        int estado = Convert.ToInt32(Console.ReadLine());
+        elegida.ActualizarPedido(numElegido, estado);
     }
-    public static void ReasignarPedidoAOtroCadete(Cadeteria cadeteria, List<Pedido> pedidos)
+    public static void ReasignarPedidoAOtroCadete(Cadeteria cadeteria)
     {
         Console.WriteLine("Seleccione el pedido que desea reasignar: ");
-        MostrarPedidosAceptados(pedidos);
+        cadeteria.MostrarPedidos();
         Console.WriteLine("Elegido: ");
         int elegido = Convert.ToInt32(Console.ReadLine());
-        Pedido pedidoElegido = pedidos.FirstOrDefault(ped => ped.Numero == elegido, null);
-        if (pedidoElegido != null)
-        {
-            Console.WriteLine("Ingrese a que cadete desea reasignar el pedido: ");
-            Console.WriteLine(cadeteria.MuestraCadetes());
-            Console.WriteLine("Cadete elegido: ");
-            int numCadElegido = Convert.ToInt32(Console.ReadLine());
-            Cadete cadeteNuevo = cadeteria.DevuelveCadete(numCadElegido);
-            if (cadeteNuevo != null)
-            {
-                cadeteria.ReasignarPedido(pedidoElegido, cadeteNuevo);
-            }
-            else
-            {
-                Console.WriteLine("Error: No existe el cadete al que intenta reasignar");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Pedido inexistente");
-        }
+        Console.WriteLine("Ingrese a que cadete desea reasignar el pedido: ");
+        Console.WriteLine(cadeteria.MuestraCadetes());
+        Console.WriteLine("Cadete elegido: ");
+        int numCadElegido = Convert.ToInt32(Console.ReadLine());
+        cadeteria.ReasignarPedido(elegido, numCadElegido);
     }
 }

@@ -2,7 +2,7 @@ namespace EspacioCadeteria
 {
     public enum EstadoPedido
     {
-        Aceptado,
+        Entregado,
         Pendiente,
         Rechazado
     }
@@ -10,24 +10,26 @@ namespace EspacioCadeteria
     {
         private int numero;
         private string obs;
-        EstadoPedido estado;
-        Cliente cliente;
+        private EstadoPedido estado;
+        private Cliente cliente;
+        private Cadete cadete;
 
-        public Pedido(int numero, string obs, Cliente cliente, EstadoPedido estado)
+        public Pedido(int numero, string obs, Cliente cliente, EstadoPedido estado, Cadete cadete)
         {
             this.numero = numero;
             this.obs = obs;
             this.cliente = cliente;
             this.estado = estado;
+            this.cadete = cadete;
         }
-        public Pedido(int numero, string obs, Cliente cliente, int estadoInt)
+        public Pedido(int numero, string obs, Cliente cliente, int estadoInt, Cadete cadete)
         {
             EstadoPedido estado = 0;
             EstadoPedido estadoEnum = 0;
             switch (estadoInt)
             {
                 case 1:
-                    estado = EstadoPedido.Aceptado;
+                    estado = EstadoPedido.Entregado;
                     break;
                 case 2:
                     estado = EstadoPedido.Pendiente;
@@ -48,29 +50,16 @@ namespace EspacioCadeteria
             this.obs = obs;
             this.cliente = cliente;
             this.estado = estado;
+            this.cadete = cadete;
         }
-        public Pedido(int numero, string obs, Cliente cliente)
+        public Pedido(int numero, string obs, Cliente cliente, Cadete cadete)
         {
             this.numero = numero;
             this.obs = obs;
             this.cliente = cliente;
             this.estado = EstadoPedido.Pendiente;
-        }
-        public Pedido(string? numeroStrnig, string? obs, Cliente cliente)
-        {
-            int numero;
-            if (int.TryParse(numeroStrnig, out numero))
-            {
-                this.numero = numero;
-                this.estado = EstadoPedido.Pendiente;
-            }
-            else
-            {
-                numero = 0;
-                this.estado = EstadoPedido.Rechazado;
-            }
-            this.obs = obs;
-            this.cliente = cliente;
+            this.cadete = cadete;
+
         }
         public void ActualizarPedido(EstadoPedido estado)
         {
@@ -83,7 +72,7 @@ namespace EspacioCadeteria
                 switch (estadoInt)
                 {
                     case 1:
-                        estado = EstadoPedido.Aceptado;
+                        estado = EstadoPedido.Entregado;
                         break;
                     case 2:
                         estado = EstadoPedido.Pendiente;
@@ -110,8 +99,14 @@ namespace EspacioCadeteria
         {
             return "Numero: " + this.numero + " - Estado: " + this.estado + " - Observaciones: " + this.obs;
         }
+        public bool CoincideCadete(int idCadete){
+            return this.cadete.Id==idCadete;
+        }
         public int Numero { get => numero; set => numero = value; }
         public string Obs { get => obs; set => obs = value; }
         public EstadoPedido Estado { get => estado; set => estado = value; }
+        public void AsignarCadeteAPedido(Cadete cadete){
+            this.cadete=cadete;
+        }
     }
 }
