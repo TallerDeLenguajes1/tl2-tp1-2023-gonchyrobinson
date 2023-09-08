@@ -3,7 +3,7 @@ using EspacioCadeteria;
 namespace EspacioArchivos
 {
     public class AccesoCSV:AccesoADatos{
-        public override List<Cadeteria> AccesoCSVCadeterias(string rutaDeArchivo)
+        public override List<Cadeteria> AccesoCadeterias(string rutaDeArchivo)
         {
              FileStream MiArchivo = new FileStream(rutaDeArchivo, FileMode.Open);
             StreamReader StrReader = new StreamReader(MiArchivo);
@@ -18,7 +18,7 @@ namespace EspacioArchivos
 
             return cadeterias;
         }
-        public override List<Cadete> AccesoCSVCadetes(string rutaDeArchivo){
+        public override List<Cadete> AccesoCadetes(string rutaDeArchivo){
             FileStream MiArchivo = new FileStream(rutaDeArchivo, FileMode.Open);
             StreamReader StrReader = new StreamReader(MiArchivo);
             string Linea = "";

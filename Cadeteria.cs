@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using EspacioArchivos;
 namespace EspacioCadeteria
 {
     public class Cadeteria
@@ -15,14 +16,8 @@ namespace EspacioCadeteria
         public List<Cadete> Cadetes { get => cadetes; set => cadetes = value; }
         public List<Pedido> Pedidos { get => pedidos; set => pedidos = value; }
 
-        public Cadeteria(string nombre, string direccion, List<Cadete> cadetes)
+        public Cadeteria()
         {
-            this.nombre = nombre;
-            this.direccion = direccion;
-            this.cadetes = cadetes;
-            this.pedidos = new List<Pedido>();
-        }
-        public Cadeteria(){
 
         }
         public Cadeteria(string nombre, string direccion)
@@ -67,21 +62,9 @@ namespace EspacioCadeteria
                 this.pedidos.Remove(eliminar);
             }
         }
-        public void AgregarCadete(Cadete cadete)
+        private void AgregarCadete(Cadete cadete)
         {
             this.cadetes.Add(cadete);
-        }
-        public void BorrarCadete(Cadete cadete)
-        {
-            this.cadetes.RemoveAll(el => el.Id == cadete.Id);
-        }
-        public void CargarCadetes(List<Cadete> cadetes)
-        {
-            this.cadetes = cadetes;
-        }
-        public Cadete? DevuelveCadete(Cadete cadete)
-        {
-            return this.cadetes.FirstOrDefault(cad => cad.Id == cadete.Id, null);
         }
         public Cadete? DevuelveCadete(int numCadete)
         {
@@ -127,7 +110,7 @@ namespace EspacioCadeteria
             string pedidosMostrar = "";
             foreach (var ped in this.pedidos)
             {
-                pedidosMostrar += "\n - "+ped.MostrarPedido();
+                pedidosMostrar += "\n - " + ped.MostrarPedido();
             }
             return pedidosMostrar;
         }
@@ -152,7 +135,7 @@ namespace EspacioCadeteria
             }
         }
 
-        public bool EncuentraCadete(Cadete cad)
+        private bool EncuentraCadete(Cadete cad)
         {
             return this.cadetes.FirstOrDefault(cadet => cadet.Id == cad.Id) != null;
         }
@@ -171,6 +154,38 @@ namespace EspacioCadeteria
         public List<Pedido> PedidosSinCadete()
         {
             return this.pedidos.Where(ped => ped.NoTieneCadeteAsignado()).ToList();
+        }
+        public void AgregaCadetes(int tipoArchivo)
+        {
+            AccesoADatos helper;
+            List<Cadete> cadetes;
+            string rutaCadeterias;
+            string rutaCadetes;
+            if (tipoArchivo == 1)
+            {
+                rutaCadeterias = "Cadeterias.csv";
+                rutaCadetes = "Nombres.csv";
+                helper = new AccesoCSV();
+            }
+            else
+            {
+                rutaCadeterias = "Cadeterias.json";
+                rutaCadetes = "Cadetes.json";
+                helper = new AccesoJson();
+            }
+            cadetes = helper.AccesoCadetes(rutaCadetes);
+            Random rand = new Random();
+            int cant = rand.Next() % cadetes.Count();
+            List<Cadete> cadetesAgregar = new List<Cadete>();
+            for (int i = 0; i < cant; i++)
+            {
+                Cadete cadAgregar = cadetes[rand.Next() % cadetes.Count()];
+                while (this.EncuentraCadete(cadAgregar))
+                {
+                    cadAgregar = cadetes[rand.Next() % cadetes.Count()];
+                }
+                this.AgregarCadete(cadAgregar);
+            }
         }
     }
 }

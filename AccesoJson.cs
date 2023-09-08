@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace EspacioArchivos
 {
     public class AccesoJson: AccesoADatos{
-        public override List<Cadeteria> AccesoJSONCadeterias(string rutaDeArchivo){
+        public override List<Cadeteria> AccesoCadeterias(string rutaDeArchivo){
             List<Cadeteria> listaProductos;
             string documento;
             using (var archivoOpen = new FileStream(rutaDeArchivo, FileMode.Open))
@@ -18,7 +18,7 @@ namespace EspacioArchivos
             }
             return (listaProductos);
         }
-        public override List<Cadete> AccesoJSONCadetes(string rutaDeArchivo){
+        public override List<Cadete> AccesoCadetes(string rutaDeArchivo){
             List<Cadete> listaCadetes;
             string documento;
             using (var archivoOpen = new FileStream(rutaDeArchivo, FileMode.Open))

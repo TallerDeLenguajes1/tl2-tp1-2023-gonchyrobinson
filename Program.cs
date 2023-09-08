@@ -12,28 +12,24 @@ internal partial class Program
         int tipoArchivo = Convert.ToInt32(Console.ReadLine());
         List<Cadeteria> cadeterias;
         List<Cadete> cadetes;
+        string rutaCadeterias;
+        string rutaCadetes;
         if (tipoArchivo == 1)
         {
-            string archivoCadeteria = "Cadeterias.csv";
-            string archivoCadete = "Nombres.csv";
+            rutaCadeterias = "Cadeterias.csv";
             helper = new AccesoCSV();
-            cadeterias = helper.AccesoCSVCadeterias(archivoCadeteria);
-            cadetes = helper.AccesoCSVCadetes(archivoCadete);
-            AgregaCadetesLista(cadeterias, cadetes);
-
         }
         else
         {
-            string rutaJsonCadeterias = "Cadeterias.json";
-            string rutaJsonCadetes = "Cadetes.json";
+            rutaCadeterias = "Cadeterias.json";
             helper = new AccesoJson();
-            cadeterias = helper.AccesoJSONCadeterias(rutaJsonCadeterias);
-            cadetes = helper.AccesoJSONCadetes(rutaJsonCadetes);
         }
+        cadeterias = helper.AccesoCadeterias(rutaCadeterias);
         Console.WriteLine("Seleccione en que cadeteria desea manejar: ");
         MostrarCadeteriasDisponilbes(cadeterias);
         Console.WriteLine("Cadeteria elegida: ");
         Cadeteria elegida = cadeterias[Convert.ToInt32(Console.ReadLine()) - 1];
+        elegida.AgregaCadetes(tipoArchivo);
         Console.WriteLine("\n===============================MENU=========================\n");
         Console.WriteLine("Ingrese una opcion:\n\ta)Dar de alta pedidos\n\tb)Cambiarlos de estado\n\tc)Reasignar el pedido a otro cadete\n\td)Asignar pedido (sin cadete) a cadete\n\te)Ver Informe provisorio\n\tOtra letra: salir");
         string? opcion = Console.ReadLine();
@@ -84,28 +80,6 @@ internal partial class Program
     {
         Console.WriteLine("\n\n===================================INFORME " + elegida.Nombre + "=====================================");
         Console.WriteLine(elegida.Informe());
-    }
-    public static void AgregaCadetes(Cadeteria cadeteria, List<Cadete> cadetes)
-    {
-        Random rand = new Random();
-        int cant = rand.Next() % cadetes.Count();
-        List<Cadete> cadetesAgregar = new List<Cadete>();
-        for (int i = 0; i < cant; i++)
-        {
-            Cadete cadAgregar = cadetes[rand.Next() % cadetes.Count()];
-            while (cadeteria.EncuentraCadete(cadAgregar))
-            {
-                cadAgregar = cadetes[rand.Next() % cadetes.Count()];
-            }
-            cadeteria.AgregarCadete(cadAgregar);
-        }
-    }
-    public static void AgregaCadetesLista(List<Cadeteria> cadeteria, List<Cadete> cadetes)
-    {
-        for (int i = 0; i < cadeteria.Count(); i++)
-        {
-            AgregaCadetes(cadeteria[i], cadetes);
-        }
     }
     public static void CargarPedido(Cadeteria cadeteria, int contador)
     {
